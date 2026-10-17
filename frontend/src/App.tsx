@@ -1,14 +1,23 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { KPIRow } from "@/components/dashboard/kpi-row";
-import { IncomeOutcomeChart } from "@/components/dashboard/income-outcome-chart";
-import { ProfitPercentChart } from "@/components/dashboard/profit-percent-chart";
 import {
   type KPIMetrics,
   type MonthlyDataPoint,
 } from "@/lib/financial-types";
 import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
 import { fetchFinancialData } from "@/lib/financial-api";
+
+const IncomeOutcomeChart = lazy(() =>
+  import("@/components/dashboard/income-outcome-chart").then(
+    ({ IncomeOutcomeChart: Chart }) => ({ default: Chart }),
+  ),
+);
+const ProfitPercentChart = lazy(() =>
+  import("@/components/dashboard/profit-percent-chart").then(
+    ({ ProfitPercentChart: Chart }) => ({ default: Chart }),
+  ),
+);
 
 function App() {
   const [metrics, setMetrics] = useState<KPIMetrics | null>(null);
@@ -57,8 +66,21 @@ function App() {
             aria-busy={loading}
             className="grid grid-cols-1 gap-4 xl:grid-cols-2"
           >
-            <IncomeOutcomeChart data={monthlyData} loading={loading} />
-            <ProfitPercentChart data={monthlyData} loading={loading} />
+            <Suspense
+              fallback={[
+                "income-outcome",
+                "profit-percent",
+              ].map((chart) => (
+                <div
+                  key={chart}
+                  aria-hidden="true"
+                  className="min-h-[380px] animate-pulse rounded-lg border border-border/60 bg-card"
+                />
+              ))}
+            >
+              <IncomeOutcomeChart data={monthlyData} loading={loading} />
+              <ProfitPercentChart data={monthlyData} loading={loading} />
+            </Suspense>
           </section>
         </div>
       </div>

@@ -114,6 +114,7 @@ try {
       await page.getByRole('status').filter({ hasText: 'Financial data loaded.' }).waitFor()
       assert.equal(await page.getByRole('application').count(), 0)
       assert.equal(await page.getByRole('table').count(), 0)
+      await page.getByText('No data available to display', { exact: true }).first().waitFor()
       assert.equal(await page.getByText('No data available to display', { exact: true }).count(), 2)
       await checkAxe(page, 'empty')
 
